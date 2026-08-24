@@ -1,0 +1,447 @@
+{
+  "name": "Marca na agenda",
+  "nodes": [
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-3-flash-preview",
+          "mode": "list",
+          "cachedResultName": "models/gemini-3-flash-preview"
+        },
+        "text": "Extraia todas as informações possíveis desta imagem e retorne a saída bruta, sem resumos ou filtros.",
+        "inputType": "binary",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        -464,
+        0
+      ],
+      "id": "37379c0e-04e3-4911-b1ab-3ca59369d581",
+      "name": "Analyze an image",
+      "retryOnFail": true,
+      "credentials": {
+        "googlePalmApi": {
+          "id": "8ZLgk1DvNRfOC9OG",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Data de hoje: {{ $now.format('dd/MM/yyyy') }} ({{ $now.toISO() }})\n\nConteúdo recebido:\n{{ $json.content.toJsonString() ?? $('Split Out').item.json.result.message.text }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "Você é um assistente especializado em extrair informações de eventos a partir de textos, imagens e áudios.\n\nA partir do conteúdo recebido, extraia as seguintes informações para criar um evento no Google Calendar:\n\n- **title**: Título sucinto do evento. Use emojis intercalados no texto para enriquecer o contexto — não apenas no início. Coloque emojis temáticos no começo e emojis contextuais junto aos elementos relevantes: bandeiras ao lado de países/times, emojis de comida ao lado de restaurantes, etc. Ex: '⚽ 🇫🇷França x Espanha🇪🇸 - Copa do Mundo 2026', '🍕 Jantar no 🇮🇹Cantina Italiana com clientes', '💊 Consulta 🏥 cardiologista'. Sempre ao menos 2 emojis.\n- **description**: Descrição completa e detalhada do que se trata o evento. Inclua todos os detalhes relevantes mencionados.\n- **startDateTime**: Data e hora de início no formato ISO 8601 (ex: 2026-07-12T14:00:00). Use a data de referência fornecida para resolver datas relativas como \"amanhã\", \"sexta\", etc.\n- **endDateTime**: Data e hora de término estimada. Se não especificada, estime uma duração razoável conforme o tipo de evento (consulta: 1h, reunião: 1h, almoço: 1.5h, viagem: conforme contexto).\n- **location**: Local do evento. Se houver endereço, formate como link do Google Maps: https://maps.google.com/?q=ENDERECO. Se for um link do Maps, mantenha como está. Se não houver localização, retorne string vazia."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -240,
+        192
+      ],
+      "id": "a8840353-4e36-431b-a60b-27398bac8b3b",
+      "name": "AI Agent",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "mode": "list",
+          "value": "kauan.calheiro@universo.univates.br",
+          "cachedResultName": "kauan.calheiro@universo.univates.br"
+        },
+        "start": "={{ /(Z|[+-]\\d{2}:\\d{2})$/.test($json.output.startDateTime) ? $json.output.startDateTime : $json.output.startDateTime + '-03:00' }}",
+        "end": "={{ /(Z|[+-]\\d{2}:\\d{2})$/.test($json.output.endDateTime) ? $json.output.endDateTime : $json.output.endDateTime + '-03:00' }}",
+        "additionalFields": {
+          "description": "={{ $json.output.description }}",
+          "location": "={{ $json.output.location }}",
+          "summary": "={{ $json.output.title }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        112,
+        192
+      ],
+      "id": "c206124f-44bc-4544-b9d8-f58d186c435d",
+      "name": "Create an event",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "fEniUqvErYaf5mu7",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.telegram.org/bot{{ $json.token }}/sendMessage",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.tgBody) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        560,
+        192
+      ],
+      "id": "0130a682-2499-4565-879c-d6f724940e7d",
+      "name": "Answer"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemma-4-31b-it",
+        "options": {}
+      },
+      "id": "b0b9fc61-5d17-4cc9-81cf-fe006606443d",
+      "name": "Gemma 4 (LM)",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        -288,
+        416
+      ],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "8ZLgk1DvNRfOC9OG",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\"type\":\"object\",\"properties\":{\"title\":{\"type\":\"string\",\"description\":\"Título sucinto com 1+ emojis como prefixo. Ex: 🍕 Almoço com cliente\"},\"description\":{\"type\":\"string\",\"description\":\"Descrição completa do evento\"},\"startDateTime\":{\"type\":\"string\",\"description\":\"Data e hora de início no formato ISO 8601. Ex: 2026-07-12T14:00:00\"},\"endDateTime\":{\"type\":\"string\",\"description\":\"Data e hora de término estimada no formato ISO 8601\"},\"location\":{\"type\":\"string\",\"description\":\"Local do evento como link Google Maps (https://maps.google.com/?q=...) ou string vazia se não houver\"}},\"required\":[\"title\",\"description\",\"startDateTime\",\"endDateTime\",\"location\"]}"
+      },
+      "id": "f412ae54-b6cc-4c2d-b7e4-4281616937fb",
+      "name": "Event Output Parser",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -96,
+        416
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// ponytail: fluxo agora e so e-mail. Monta a resposta a partir do evento realmente\n// criado no Calendar (nao da saida do agente): funciona com pin data e nao depende\n// de pairedItem. Se voltar o polling do Telegram, reintroduzir o ramo por origem.\nconst TG_TOKEN = '<TELEGRAM_BOT_TOKEN>';\nconst TG_CHAT_ID = '<TELEGRAM_CHAT_ID>';\n\nconst e = $input.item.json;\nconst esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\nconst dt = s => String(s ?? '').replace('T', ' ').slice(0, 16);\n\nlet text = `✅ <b>Evento criado!</b>\\n\\n<b>${esc(e.summary)}</b>\\n\\n\\u{1F5D3} <b>Início:</b> ${dt(e.start?.dateTime || e.start?.date)}\\n⏱ <b>Término:</b> ${dt(e.end?.dateTime || e.end?.date)}`;\nif (e.location) text += `\\n\\n\\u{1F4CD} <b>Local:</b> ${esc(e.location)}`;\nif (e.description) text += `\\n\\n\\u{1F4DD} ${esc(e.description)}`;\nif (e.htmlLink) text += `\\n\\n<a href=\"${esc(e.htmlLink)}\">Abrir no Google Calendar</a>`;\n\nreturn { ...e, messageText: text, token: TG_TOKEN,\n         tgBody: { chat_id: TG_CHAT_ID, parse_mode: 'HTML', text } };\n"
+      },
+      "id": "b01cdbc4-97f7-498a-b95d-e4625cae78f3",
+      "name": "Format Message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        336,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "simple": false,
+        "filters": {},
+        "options": {
+          "downloadAttachments": true
+        }
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -1136,
+        192
+      ],
+      "id": "6ccd9e78-e272-4423-a118-0c744a366c62",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "wRTE8ucRiEMtNFg5",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Normaliza o e-mail para o formato que o resto do fluxo espera.\nconst item = $input.item;\nconst j = item.json;\n\n// Gmail Trigger (simple: false) devolve campos do mailparser no topo; \"headers\"\n// vem como objeto e repete o nome do header dentro do valor (\"Subject: ...\").\nconst h = j.headers || {};\nconst unprefix = (v, name) => String(v ?? '').replace(new RegExp('^' + name + ':\\\\s*', 'i'), '').trim();\nconst subject = j.subject ?? unprefix(h.subject, 'Subject');\nconst from = j.from?.value?.[0]?.address ?? unprefix(h.from, 'From');\nconst body = j.text ?? j.snippet ?? '';\n\n// ponytail: pega o primeiro anexo. Se um dia chegar e-mail com varios, escolher por tamanho/mime.\nconst bin = item.binary || {};\nconst key = Object.keys(bin)[0];\n\nconst MIME_BY_EXT = { jpg:'image/jpeg', jpeg:'image/jpeg', png:'image/png', gif:'image/gif',\n                      webp:'image/webp', heic:'image/heic', pdf:'application/pdf' };\nconst IMAGES = ['image/jpeg','image/png','image/gif','image/webp','image/heic','image/heif'];\n\nlet kind = 'text';\nif (key) {\n  const b = bin[key];\n  if (!b.mimeType || b.mimeType === 'application/octet-stream') {\n    const ext = String(b.fileName || '').split('.').pop().toLowerCase();\n    b.mimeType = MIME_BY_EXT[ext] || 'application/pdf';\n  }\n  item.binary = { data: b };            // os nos Gemini leem sempre o campo \"data\"\n  kind = IMAGES.includes(b.mimeType) ? 'image' : 'document';\n}\n\nitem.json = {\n  source: 'email',\n  kind,\n  subject,\n  from,\n  fileName: key ? item.binary.data.fileName : null,\n  // sem anexo: o AI Agent le daqui (mesmo campo que o Gemini preenche)\n  content: kind === 'text' ? { subject, from, text: body } : undefined,\n};\nreturn item;\n"
+      },
+      "id": "60c0f2a8-9df7-4d31-afc4-6a1832d1a633",
+      "name": "Prep Email",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -912,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "re-img",
+                    "leftValue": "={{ $json.kind }}",
+                    "rightValue": "image",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "image"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "re-doc",
+                    "leftValue": "={{ $json.kind }}",
+                    "rightValue": "document",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "document"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "re-txt",
+                    "leftValue": "={{ $json.kind }}",
+                    "rightValue": "text",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "text"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "9515c3ea-8813-42a8-8b22-9e18893bf73f",
+      "name": "Route Email",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -688,
+        176
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "document",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-3-flash-preview",
+          "mode": "list",
+          "cachedResultName": "models/gemini-3-flash-preview"
+        },
+        "text": "Extraia todas as informações possíveis deste documento e retorne a saída bruta, sem resumos ou filtros.",
+        "inputType": "binary",
+        "options": {
+          "maxOutputTokens": 2048
+        }
+      },
+      "id": "d42c42a2-7f6c-4276-9e51-47ad3f7a64e6",
+      "name": "Analyze a document",
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        -464,
+        192
+      ],
+      "retryOnFail": true,
+      "credentials": {
+        "googlePalmApi": {
+          "id": "8ZLgk1DvNRfOC9OG",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Analyze an image": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemma 4 (LM)": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Event Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Create an event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create an event": {
+      "main": [
+        [
+          {
+            "node": "Format Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Message": {
+      "main": [
+        [
+          {
+            "node": "Answer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Prep Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prep Email": {
+      "main": [
+        [
+          {
+            "node": "Route Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route Email": {
+      "main": [
+        [
+          {
+            "node": "Analyze an image",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Analyze a document",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze a document": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "pinData": {}
+}
