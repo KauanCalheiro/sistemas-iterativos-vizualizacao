@@ -1,22 +1,28 @@
-x# Explorando Técnicas Não Convencionais de Interação
+# Explorando Técnicas Não Convencionais de Interação
 
-**Unidade de Aprendizagem:** Sistemas Interativos e de Visualização
-**Professor:** Edson Moacir Ahlert
 **Estudantes:** Kauan Morinel Calheiro e Everton Luiz de Oliveira
-**Data:** 24/08/2026
 
 ## Técnicas investigadas
 
 O trabalho investigou duas técnicas que usam a voz como parte central da interação.
 
-| Técnica | Como funciona | Aplicações pesquisadas |
-|---|---|---|
-| **Interface por voz (VUI)** | A fala é convertida em texto, o sistema identifica o comando e responde por áudio ou tela. | Android Voice Access e Amazon Echo Show. |
-| **Voz, olhar e gestos** | O sistema combina a fala com o objeto observado ou apontado para entender o contexto. | GazePointAR, Microsoft SIGMA e Apple Vision Pro. |
+| Técnica                     | Entrada, processamento e saída                                                                                                                                              | Contexto e usuários                                                                                                                                                                                      |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Interface por voz (VUI)** | O microfone capta a fala; o sistema a converte em texto, identifica a intenção e responde por áudio ou tela.                                                                | Assistentes virtuais, dispositivos inteligentes e acessibilidade. Atende qualquer usuário, mas é especialmente útil para pessoas com deficiência visual ou motora e para quem está com as mãos ocupadas. |
+| **Voz, olhar e gestos**     | Microfone, câmeras e sensores captam fala, direção do olhar e movimentos; o sistema sincroniza os sinais para identificar o objeto e responde por áudio ou destaque visual. | Realidade aumentada, treinamentos e orientação de tarefas práticas. Pode ser utilizada por estudantes, técnicos e profissionais que precisam consultar informações mantendo as mãos livres.              |
 
-A interface por voz permite realizar tarefas sem teclado, mouse ou toque. Isso é útil para pessoas com deficiência visual ou motora e em situações nas quais as mãos estão ocupadas. Suas principais limitações são o ruído, os erros de reconhecimento, a dificuldade de descobrir quais comandos existem e a privacidade das gravações.
+### Aplicações pesquisadas
 
-A interação multimodal torna comandos como “o que é isso?” mais naturais, pois o olhar ou o gesto indica o objeto citado. Entretanto, ela depende de câmeras e sensores, pode associar a fala ao objeto errado e possui custo maior.
+| Aplicação | Uso da técnica |
+|---|---|
+| **Android Voice Access** | Recurso de acessibilidade que permite abrir aplicativos, navegar pelas telas, selecionar elementos e editar textos por comandos falados. A interface mostra o que reconheceu e pode numerar itens quando um comando for ambíguo. |
+| **Amazon Echo Show** | Dispositivo com Alexa que combina uma experiência orientada por voz com tela e toque. As respostas visuais complementam a fala com textos, imagens, listas e controles. |
+| **GazePointAR** | Protótipo de realidade aumentada que combina voz e direção do olhar para interpretar referências como “isso” ou “aquilo” e identificar o objeto observado. |
+| **Microsoft SIGMA** | Sistema experimental de realidade mista para orientar tarefas físicas. Utiliza fala, visão computacional, mãos e olhar para acompanhar o contexto e apresentar instruções. |
+
+### Benefícios, limitações e condições de uso
+
+A voz permite interagir com as mãos livres, enquanto olhar e gestos ajudam a identificar objetos de forma natural. Ruídos, falhas de reconhecimento ou dos sensores podem gerar ações incorretas, e a solução multimodal exige maior custo e processamento. O uso requer feedback claro, confirmação de ações, proteção dos dados e alternativas por texto ou botões.
 
 ## Análise com as heurísticas de Nielsen
 
@@ -54,14 +60,12 @@ O protótipo terá um checklist curto cadastrado pelo responsável do local. A e
 
 ### Fluxo da interação
 
-```text
-Usuário fala
-      ↓
-Reconhecimento do comando
-      ↓
-Validação e atualização da etapa
-      ↓
-Feedback por voz e pela tela
+```mermaid
+%%{init: {"flowchart": {"nodeSpacing": 15, "rankSpacing": 20, "diagramPadding": 4}}}%%
+flowchart LR
+    A["Comando<br/>falado"] --> B["Reconhece<br/>a voz"] --> C{"Válido?"}
+    C -- Sim --> D["Atualiza<br/>a etapa"] --> F["Feedback<br/>por voz e tela"]
+    C -- Não --> E["Solicita<br/>repetição"] --> F
 ```
 
 ### Entrada, processamento e saída
@@ -105,6 +109,8 @@ As técnicas pesquisadas mostram que a voz pode tornar a interação mais acess�
 - CHEN, Chen et al. *Screen or No Screen? Lessons Learnt from a Real-World Deployment Study of Using Voice Assistants With and Without Touchscreen for Older Adults*. ASSETS, 2023. <https://arxiv.org/abs/2307.07723>
 - LEE, Jaewook et al. *GazePointAR: A Context-Aware Multimodal Voice Assistant for Pronoun Disambiguation in Wearable Augmented Reality*. CHI, 2024. <https://arxiv.org/abs/2404.08213>
 - MICROSOFT RESEARCH. *SIGMA: An open-source mixed-reality system for research on physical task assistance*. 2024. <https://www.microsoft.com/en-us/research/blog/sigma-an-open-source-mixed-reality-system-for-research-on-physical-task-assistance/>
+- GOOGLE. *Get started with Voice Access spoken commands*. Android Accessibility Help. <https://support.google.com/accessibility/android/answer/6151848>
+- AMAZON. *Multimodal Design: Introduction*. Alexa Design Guide. <https://developer.amazon.com/en-US/alexa/alexa-haus/multimodal-introduction>
 - NIELSEN, Jakob. *10 Usability Heuristics for User Interface Design*. Nielsen Norman Group. <https://www.nngroup.com/articles/ten-usability-heuristics/>
 
 ## Uso de inteligência artificial

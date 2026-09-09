@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#071a18" />
+    <meta
+      name="description"
+      content="VozSegura 2.0: checklist de segurança acionado por comandos de voz reconhecidos localmente."
+    />
+    <title>VozSegura 2.0</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="ambient ambient-one" aria-hidden="true"></div>
+    <div class="ambient ambient-two" aria-hidden="true"></div>
+
+    <main class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="#" aria-label="VozSegura — início">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 32 32" role="img">
+              <path d="M16 2.5 27 7v7.6c0 7.1-4.5 12.6-11 14.9C9.5 27.2 5 21.7 5 14.6V7l11-4.5Z" />
+              <path d="m10.5 16 3.5 3.5 7.8-8" />
+            </svg>
+          </span>
+          <span>
+            <strong>VozSegura</strong>
+            <small>checklist inteligente</small>
+          </span>
+        </a>
+
+        <div class="system-state" id="system-state" data-state="idle" role="status" aria-live="polite">
+          <span class="state-dot"></span>
+          <span id="system-state-label">Pronto</span>
+        </div>
+      </header>
+
+      <section class="hero" aria-labelledby="page-title">
+        <div>
+          <p class="eyebrow">IoT + TinyML · processamento local</p>
+          <h1 id="page-title">Prepare a bancada com as mãos livres.</h1>
+          <p class="hero-copy">
+            O microfone percebe o comando, o modelo interpreta no dispositivo e o checklist responde por voz e tela.
+          </p>
+        </div>
+
+        <div class="privacy-badge" title="O modelo final será executado localmente">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M7 10V7a5 5 0 0 1 10 0v3M5 10h14v11H5z" />
+          </svg>
+          <span><strong>Áudio local</strong>Não envia fala para a nuvem</span>
+        </div>
+      </section>
+
+      <div class="workspace">
+        <section class="checklist-card" aria-labelledby="checklist-title">
+          <div class="card-heading">
+            <div>
+              <p class="section-label">Procedimento selecionado</p>
+              <h2 id="checklist-title">Preparação segura da bancada</h2>
+            </div>
+            <span class="step-counter" id="step-counter">Etapa 1 de 5</span>
+          </div>
+
+          <div
+            class="progress-track"
+            role="progressbar"
+            aria-label="Progresso do procedimento"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            aria-valuenow="0"
+          >
+            <span id="progress-bar"></span>
+          </div>
+
+          <article class="current-step" aria-live="polite">
+            <span class="step-number" id="step-number">01</span>
+            <div>
+              <p class="step-kicker">Agora, verifique:</p>
+              <h3 id="step-text">Retire objetos desnecessários e mantenha livre a área de trabalho.</h3>
+            </div>
+          </article>
+
+          <div class="heard-panel" id="heard-panel">
+            <div class="wave" aria-hidden="true">
+              <i></i><i></i><i></i><i></i><i></i>
+            </div>
+            <div>
+              <span>Última classificação</span>
+              <strong id="heard-command">Nenhum comando</strong>
+            </div>
+            <span class="confidence" id="confidence">—</span>
+          </div>
+
+          <div class="primary-actions">
+            <button class="button button-primary" id="listen-button" type="button">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="8" y="3" width="8" height="12" rx="4" />
+                <path d="M5 11a7 7 0 0 0 14 0M12 18v3M9 21h6" />
+              </svg>
+              <span id="listen-label">Ativar comandos de voz</span>
+            </button>
+            <button class="button button-secondary" id="repeat-button" type="button">Ouvir etapa</button>
+          </div>
+
+          <div class="fallback-actions" aria-label="Controles alternativos">
+            <button id="back-button" type="button">Voltar</button>
+            <button id="complete-button" type="button">Concluir etapa</button>
+            <button id="cancel-button" type="button">Cancelar</button>
+          </div>
+        </section>
+
+        <aside class="side-panel">
+          <section class="sensor-card">
+            <div class="card-heading compact">
+              <div>
+                <p class="section-label">Ciclo de interação</p>
+                <h2>Do ambiente ao feedback</h2>
+              </div>
+            </div>
+
+            <ol class="interaction-flow">
+              <li class="active">
+                <span>1</span>
+                <div><strong>Microfone</strong><small>captura o comando</small></div>
+              </li>
+              <li>
+                <span>2</span>
+                <div><strong>TinyML</strong><small>classifica localmente</small></div>
+              </li>
+              <li>
+                <span>3</span>
+                <div><strong>Checklist</strong><small>valida e atualiza</small></div>
+              </li>
+              <li>
+                <span>4</span>
+                <div><strong>Voz + tela</strong><small>confirma a ação</small></div>
+              </li>
+            </ol>
+          </section>
+
+          <section class="model-card">
+            <div class="model-heading">
+              <span class="model-icon" aria-hidden="true">ML</span>
+              <div>
+                <p class="section-label">Motor de classificação</p>
+                <h2 id="model-name">Modo de demonstração</h2>
+              </div>
+            </div>
+            <p id="model-description">
+              Interface pronta. O modelo Edge Impulse será conectado depois da coleta das amostras no iPhone.
+            </p>
+            <dl class="model-metrics">
+              <div><dt>Entrada</dt><dd>microfone</dd></div>
+              <div><dt>Classes</dt><dd>4</dd></div>
+              <div><dt>Execução</dt><dd id="execution-place">pendente</dd></div>
+            </dl>
+          </section>
+
+          <details class="demo-card">
+            <summary>Testar sem o modelo</summary>
+            <p>Simule classificações para validar todo o fluxo antes do treinamento.</p>
+            <div class="demo-buttons">
+              <button type="button" data-demo-command="concluido">“Concluído”</button>
+              <button type="button" data-demo-command="repetir">“Repetir”</button>
+              <button type="button" data-demo-command="desconhecido">Outra palavra</button>
+              <button type="button" data-demo-command="ruido">Ruído</button>
+            </div>
+          </details>
+        </aside>
+      </div>
+
+      <footer>
+        <p>VozSegura 2.0 · Sistemas Interativos e de Visualização</p>
+        <button id="reset-button" type="button">Reiniciar procedimento</button>
+      </footer>
+    </main>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <dialog id="completion-dialog">
+      <div class="dialog-icon" aria-hidden="true">✓</div>
+      <p class="eyebrow">Procedimento finalizado</p>
+      <h2>Todas as etapas foram confirmadas.</h2>
+      <p>O registro desta demonstração ficou salvo apenas neste navegador.</p>
+      <button class="button button-primary" id="restart-dialog-button" type="button">Realizar novamente</button>
+    </dialog>
+
+    <script src="model/runtime/browser/edge-impulse-standalone.js"></script>
+    <script src="model/runtime/browser/run-impulse.js"></script>
+    <script src="tinyml-adapter.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
